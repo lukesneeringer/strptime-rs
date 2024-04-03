@@ -83,6 +83,7 @@ impl RawTime {
 /// A parsed date and time.
 #[derive(Debug, Clone)]
 pub struct RawDateTime {
+  pub(crate) src: String,
   pub(crate) date: Option<RawDate>,
   pub(crate) time: Option<RawTime>,
 }
@@ -92,14 +93,22 @@ impl RawDateTime {
   ///
   /// If any date was parsed, the entire date is guaranteed to be valid (in other words, the month
   /// and day will never be zero).
-  pub fn date(&self) -> Option<RawDate> {
-    self.date
+  ///
+  /// For convenience, this method sends `Result` rather than `Option` so that methods that want to
+  /// handle `ParseResult` can do so here easily also. The only error this ever sends is
+  /// `MissingDate`, and it's safe to send to `.ok()` if you want an `Option` instead.
+  pub fn date(&self) -> ParseResult<RawDate> {
+    self.date.ok_or_else(|| ParseError::new(self.src.as_str(), ErrorKind::MissingDate))
   }
 
   /// The time, if a time was parsed. If certain fields within the time were omitted, they will be
   /// set to `0`.
-  pub fn time(&self) -> Option<RawTime> {
-    self.time
+  ///
+  /// For convenience, this method sends `Result` rather than `Option` so that methods that want to
+  /// handle `ParseResult` can do so here easily also. The only error this ever sends is
+  /// `MissingTime`, and it's safe to send to `.ok()` if you want an `Option` instead.
+  pub fn time(&self) -> ParseResult<RawTime> {
+    self.time.ok_or_else(|| ParseError::new(self.src.as_str(), ErrorKind::MissingTime))
   }
 
   pub(crate) fn assert_complete(&self, src: &str) -> ParseResult<()> {

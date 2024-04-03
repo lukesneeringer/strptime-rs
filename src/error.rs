@@ -51,6 +51,8 @@ pub enum ErrorKind {
   InputTooLong,
   InputTooShort,
   InvalidFormat,
+  MissingDate,
+  MissingTime,
   Unexpected,
 }
 
@@ -62,6 +64,8 @@ impl Display for ErrorKind {
       Self::InputTooLong => "Parsing finished, but input remains",
       Self::InputTooShort => "Input terminated unexpectedly before parsing finished",
       Self::InvalidFormat => "Could not parse format string",
+      Self::MissingDate => "Parsing successful, but no date found",
+      Self::MissingTime => "Parsing successful, but no time found",
       Self::Unexpected => "Input does not conform to format string",
     })
   }

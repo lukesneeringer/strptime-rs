@@ -22,21 +22,21 @@ impl RawTime {
 #[test]
 fn test_parse_ymd() -> ParseResult<()> {
   let parser = Parser::new("%Y-%m-%d");
-  check!(parser.parse("2012-04-21")?.date().unwrap().ymd() == (2012, 4, 21));
-  check!(parser.parse("1776-07-04")?.date().unwrap().ymd() == (1776, 7, 4));
-  check!(parser.parse("2012-04-21")?.time().is_none());
+  check!(parser.parse("2012-04-21")?.date()?.ymd() == (2012, 4, 21));
+  check!(parser.parse("1776-07-04")?.date()?.ymd() == (1776, 7, 4));
+  check!(parser.parse("2012-04-21")?.time().is_err());
   let parser = Parser::new("%-m/%-d/%Y");
-  check!(parser.parse("4/21/2012")?.date().unwrap().ymd() == (2012, 4, 21));
-  check!(parser.parse("7/4/1776")?.date().unwrap().ymd() == (1776, 7, 4));
+  check!(parser.parse("4/21/2012")?.date()?.ymd() == (2012, 4, 21));
+  check!(parser.parse("7/4/1776")?.date()?.ymd() == (1776, 7, 4));
   Ok(())
 }
 
 #[test]
 fn test_parse_weekday() -> ParseResult<()> {
   let parser = Parser::new("%A, %B %-d, %Y");
-  check!(parser.parse("Saturday, April 21, 2012")?.date().unwrap().ymd() == (2012, 4, 21));
+  check!(parser.parse("Saturday, April 21, 2012")?.date()?.ymd() == (2012, 4, 21));
   let parser = Parser::new("%a, %B %-d, %Y");
-  check!(parser.parse("Sat, April 21, 2012")?.date().unwrap().ymd() == (2012, 4, 21));
+  check!(parser.parse("Sat, April 21, 2012")?.date()?.ymd() == (2012, 4, 21));
   Ok(())
 }
 
@@ -44,7 +44,7 @@ fn test_parse_weekday() -> ParseResult<()> {
 fn test_parse_month_abbr() -> ParseResult<()> {
   let parser = Parser::new("%Y %b %-d");
   for d in ["2012 Apr 21", "2012 apr 21", "2012 APR 21"] {
-    check!(parser.parse(d)?.date().unwrap().ymd() == (2012, 4, 21));
+    check!(parser.parse(d)?.date()?.ymd() == (2012, 4, 21));
   }
   Ok(())
 }
@@ -53,7 +53,7 @@ fn test_parse_month_abbr() -> ParseResult<()> {
 fn test_parse_month() -> ParseResult<()> {
   let parser = Parser::new("%B %-d, %Y");
   for d in ["April 21, 2012", "Apr 21, 2012", "APRIL 21, 2012"] {
-    check!(parser.parse(d)?.date().unwrap().ymd() == (2012, 4, 21));
+    check!(parser.parse(d)?.date()?.ymd() == (2012, 4, 21));
   }
   Ok(())
 }
@@ -61,8 +61,8 @@ fn test_parse_month() -> ParseResult<()> {
 #[test]
 fn test_parse_single_digits() -> ParseResult<()> {
   let parser = Parser::new("%-m/%-d/%Y");
-  check!(parser.parse("3/11/2020")?.date().unwrap().ymd() == (2020, 3, 11));
-  check!(parser.parse("7/4/1776")?.date().unwrap().ymd() == (1776, 7, 4));
+  check!(parser.parse("3/11/2020")?.date()?.ymd() == (2020, 3, 11));
+  check!(parser.parse("7/4/1776")?.date()?.ymd() == (1776, 7, 4));
   Ok(())
 }
 
@@ -79,16 +79,16 @@ fn test_parse_time() -> ParseResult<()> {
 fn test_parse_time_alone() -> ParseResult<()> {
   let parser = Parser::new("%H:%M:%S");
   let raw = parser.parse("15:30:45")?;
-  check!(raw.date().is_none());
-  check!(raw.time().unwrap().hms() == (15, 30, 45, 0));
+  check!(raw.date().ok().is_none());
+  check!(raw.time()?.hms() == (15, 30, 45, 0));
   Ok(())
 }
 
 #[test]
 fn test_12h_time() -> ParseResult<()> {
-  check!(Parser::new("%I:%M %P").parse("11:30 am")?.time().unwrap().hms() == (11, 30, 0, 0));
-  check!(Parser::new("%I:%M %P").parse("11:30 pm")?.time().unwrap().hms() == (23, 30, 0, 0));
-  check!(Parser::new("%I:%M %p").parse("11:30 PM")?.time().unwrap().hms() == (23, 30, 0, 0));
+  check!(Parser::new("%I:%M %P").parse("11:30 am")?.time()?.hms() == (11, 30, 0, 0));
+  check!(Parser::new("%I:%M %P").parse("11:30 pm")?.time()?.hms() == (23, 30, 0, 0));
+  check!(Parser::new("%I:%M %p").parse("11:30 PM")?.time()?.hms() == (23, 30, 0, 0));
   Ok(())
 }
 
