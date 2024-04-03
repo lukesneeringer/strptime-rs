@@ -15,7 +15,7 @@ pub use models::RawDateTime;
 pub use models::RawTime;
 
 /// A result returned from date and time parsing.
-type ParseResult<T> = Result<T, ParseError>;
+pub type ParseResult<T> = Result<T, ParseError>;
 
 /// A date and time parser object.
 ///
@@ -117,11 +117,14 @@ impl Parser {
   /// ## Example
   ///
   /// ```
+  /// # fn main() -> strptime::ParseResult<()> {
   /// use strptime::Parser;
   /// let parser = Parser::new("%m/%d/%y"); // Default behavior.
-  /// assert_eq!(parser.parse("04/21/12")?.date().year(), 2012);
+  /// assert_eq!(parser.parse("04/21/12")?.date().unwrap().year(), 2012);
   /// let parser = Parser::new("%m/%d/%y").modulo_year_resolution(|y| 2200 + y);
-  /// assert_eq!(parser.parse("04/21/12")?.date().year(), 2212);
+  /// assert_eq!(parser.parse("04/21/12")?.date().unwrap().year(), 2212);
+  /// # Ok(())
+  /// # }
   /// ```
   pub const fn modulo_year_resolution(mut self, modulo_year_resolution: fn(i16) -> i16) -> Self {
     self.opts.modulo_year_resolution = modulo_year_resolution;
