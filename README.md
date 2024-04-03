@@ -1,7 +1,7 @@
 # strptime
 
 [![ci](https://github.com/lukesneeringer/strptime/actions/workflows/ci.yaml/badge.svg)](https://github.com/lukesneeringer/strptime/actions/workflows/ci.yaml)
-[![codecov](https://codecov.io/gh/lukesneeringer/strptime/branch/main/graph/badge.svg?token=oH2z7PFp06)](https://codecov.io/gh/lukesneeringer/strptime)
+[![codecov](https://codecov.io/gh/lukesneeringer/strptime/branch/main/graph/badge.svg?token=8Ej03AkjO3)](https://codecov.io/gh/lukesneeringer/strptime)
 [![release](https://img.shields.io/crates/v/strptime.svg)](https://crates.io/crates/strptime)
 [![docs](https://img.shields.io/badge/docs-release-blue)](https://docs.rs/strptime/)
 
