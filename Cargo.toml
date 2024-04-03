@@ -2,7 +2,20 @@
 name = "strptime"
 version = "0.1.0"
 edition = "2021"
-
+authors = ["Luke Sneeringer <luke@sneeringer.com>"]
+description = "Date & time parsing without date library dependencies."
+keywords = ["date", "time"]
+categories = ["date-and-time"]
+rust-version = "1.70"
+license = "MIT"
+repository = "https://github.com/lukesneeringer/strptime-rs"
+documentation = "https://docs.rs/strptime"
+readme = "README.md"
+exclude = [
+  "/.github/*",
+  "/rustfmt.toml",
+  "/.prettierrc.yaml",
+]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

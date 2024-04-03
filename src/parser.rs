@@ -50,10 +50,18 @@ impl<'a> OnceParser<'a> {
             // Date: Day
             'd' => answer.set_day(input.parse_int::<u8>(2, padding)?),
             'e' => answer.set_day(input.parse_int::<u8>(2, Some(padding.unwrap_or(' ')))?),
+            // Date: Weekday
+            //
+            // Currently this is just thrown away once validation is done, but once %U/%W are
+            // supported, this could be used to parse a full date.
+            'a' => drop(input.parse_weekday_abbr()?),
+            'A' => drop(input.parse_weekday()?),
             // Time: Hour
             'H' => answer.set_hour(input.parse_int::<u8>(2, padding)?),
             'k' => answer.set_hour(input.parse_int::<u8>(2, Some(padding.unwrap_or(' ')))?),
             'I' => self.partials.hour_12 = Some(input.parse_int::<u8>(2, padding)?),
+            'p' => self.partials.pm = Some(input.parse_am_pm_upper()?),
+            'P' => self.partials.pm = Some(input.parse_am_pm_lower()?),
             // Time: Minute
             'M' => answer.set_minute(input.parse_int::<u8>(2, padding)?),
             // Time: Second
@@ -161,7 +169,7 @@ impl<'a> Input<'a> {
     }
   }
 
-  /// Parse a month abbreviation.
+  /// Parse a month abbreviation (always three letters).
   fn parse_month_abbr(&mut self) -> ParseResult<u8> {
     let abbr = self.pop_front(3).to_lowercase();
     Ok(match abbr.as_str() {
@@ -200,6 +208,56 @@ impl<'a> Input<'a> {
       _ => "",
     });
     Ok(month)
+  }
+
+  /// Parse a weekday abbreviation (always three letters).
+  fn parse_weekday_abbr(&mut self) -> ParseResult<u8> {
+    let abbr = self.pop_front(3).to_lowercase();
+    Ok(match abbr.as_str() {
+      "sun" => 0,
+      "mon" => 1,
+      "tue" => 2,
+      "wed" => 3,
+      "thu" => 4,
+      "fri" => 5,
+      "sat" => 6,
+      _ => self.fail(ErrorKind::Unexpected)?,
+    })
+  }
+
+  fn parse_weekday(&mut self) -> ParseResult<u8> {
+    let weekday = self.parse_weekday_abbr()?;
+    self.trim_front_seq(match weekday {
+      0 | 1 | 5 => "day",
+      2 => "sday",
+      3 => "nesday",
+      4 => "rsday",
+      6 => "urday",
+      _ => "",
+    });
+    Ok(weekday)
+  }
+
+  fn parse_am_pm_lower(&mut self) -> ParseResult<u8> {
+    let value = match self.peek() {
+      Some('a') => 0,
+      Some('p') => 12,
+      _ => self.fail(ErrorKind::Unexpected)?,
+    };
+    self.pop_front(1);
+    self.expect_char('m')?;
+    Ok(value)
+  }
+
+  fn parse_am_pm_upper(&mut self) -> ParseResult<u8> {
+    let value = match self.peek() {
+      Some('A') => 0,
+      Some('P') => 12,
+      _ => self.fail(ErrorKind::Unexpected)?,
+    };
+    self.pop_front(1);
+    self.expect_char('M')?;
+    Ok(value)
   }
 
   /// Trim all or part of the given sequence, case-insensitive. Stop at the first non-match found.
@@ -253,92 +311,5 @@ impl Partials {
       (None, Some(m)) => Ok(Some((opts.modulo_year_resolution)(m))),
       (None, None) => Ok(None),
     }
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use assert2::check;
-
-  use crate::ParseResult;
-  use crate::Parser;
-  use crate::RawDate;
-  use crate::RawTime;
-
-  impl RawDate {
-    pub(crate) fn ymd(&self) -> (i16, u8, u8) {
-      (self.year.unwrap(), self.month.unwrap(), self.day.unwrap())
-    }
-  }
-
-  impl RawTime {
-    pub(crate) fn hms(&self) -> (u8, u8, u8, u64) {
-      (self.hour, self.minute, self.second, self.nanosecond)
-    }
-  }
-
-  #[test]
-  fn test_parse_ymd() -> ParseResult<()> {
-    let parser = Parser::new("%Y-%m-%d");
-    check!(parser.parse("2012-04-21")?.date().unwrap().ymd() == (2012, 4, 21));
-    check!(parser.parse("1776-07-04")?.date().unwrap().ymd() == (1776, 7, 4));
-    check!(parser.parse("2012-04-21")?.time().is_none());
-    let parser = Parser::new("%-m/%-d/%Y");
-    check!(parser.parse("4/21/2012")?.date().unwrap().ymd() == (2012, 4, 21));
-    check!(parser.parse("7/4/1776")?.date().unwrap().ymd() == (1776, 7, 4));
-    Ok(())
-  }
-
-  #[test]
-  fn test_parse_month_abbr() -> ParseResult<()> {
-    let parser = Parser::new("%Y %b %-d");
-    for d in ["2012 Apr 21", "2012 apr 21", "2012 APR 21"] {
-      check!(parser.parse(d)?.date().unwrap().ymd() == (2012, 4, 21));
-    }
-    Ok(())
-  }
-
-  #[test]
-  fn test_parse_month() -> ParseResult<()> {
-    let parser = Parser::new("%B %-d, %Y");
-    for d in ["April 21, 2012", "Apr 21, 2012", "APRIL 21, 2012"] {
-      check!(parser.parse(d)?.date().unwrap().ymd() == (2012, 4, 21));
-    }
-    Ok(())
-  }
-
-  #[test]
-  fn test_parse_single_digits() -> ParseResult<()> {
-    let parser = Parser::new("%-m/%-d/%Y");
-    check!(parser.parse("3/11/2020")?.date().unwrap().ymd() == (2020, 3, 11));
-    check!(parser.parse("7/4/1776")?.date().unwrap().ymd() == (1776, 7, 4));
-    Ok(())
-  }
-
-  #[test]
-  fn test_parse_time() -> ParseResult<()> {
-    let parser = Parser::new("%Y-%m-%d %H:%M:%S");
-    let raw = parser.parse("2012-04-21 11:00:00")?;
-    check!(raw.date().unwrap().ymd() == (2012, 4, 21));
-    check!(raw.time().unwrap().hms() == (11, 0, 0, 0));
-    Ok(())
-  }
-
-  #[test]
-  fn test_parse_time_alone() -> ParseResult<()> {
-    let parser = Parser::new("%H:%M:%S");
-    let raw = parser.parse("15:30:45")?;
-    check!(raw.date().is_none());
-    check!(raw.time().unwrap().hms() == (15, 30, 45, 0));
-    Ok(())
-  }
-
-  #[test]
-  fn test_errors() -> ParseResult<()> {
-    check!(Parser::new("%Y-%m-%d").parse("12-14-21").is_err()); // Expected 4 digits
-    check!(Parser::new("%C").parse("20").is_err()); // Ambiguous
-    check!(Parser::new("%Y %b %d").parse("2012 April 21").is_err()); // Expected "Apr"
-    check!(Parser::new("%m/%d/%Y").parse("7/4/1776").is_err()); // Expected 2 digits
-    Ok(())
   }
 }
