@@ -51,6 +51,10 @@ pub struct RawTime {
 }
 
 impl RawTime {
+  pub(crate) fn new() -> Self {
+    Self { hour: 0, minute: 0, second: 0, nanosecond: 0 }
+  }
+
   /// The hour; between 0 and 23, inclusive.
   #[inline]
   pub fn hour(&self) -> u8 {
@@ -81,7 +85,6 @@ impl RawTime {
 pub struct RawDateTime {
   pub(crate) date: Option<RawDate>,
   pub(crate) time: Option<RawTime>,
-  pub(crate) tz: Option<String>,
 }
 
 impl RawDateTime {
@@ -97,12 +100,6 @@ impl RawDateTime {
   /// set to `0`.
   pub fn time(&self) -> Option<RawTime> {
     self.time
-  }
-
-  /// The parsed time zone, if any.
-  #[inline]
-  pub fn tz(&self) -> Option<&str> {
-    self.tz.as_deref()
   }
 
   pub(crate) fn assert_complete(&self, src: &str) -> ParseResult<()> {
@@ -128,4 +125,23 @@ set_date! (
   set_year(year: i16),
   set_month(month: u8),
   set_day(day: u8)
+);
+
+macro_rules! set_time {
+  ($($fn_name:ident($arg:ident: $arg_type:ty)),*) => {
+    impl RawDateTime {
+      $(pub(crate) fn $fn_name(&mut self, $arg: $arg_type) {
+        let mut time = self.time.take().unwrap_or_else(RawTime::new);
+        time.$arg = $arg;
+        self.time = Some(time);
+      })*
+    }
+  }
+}
+
+set_time!(
+  set_hour(hour: u8),
+  set_minute(minute: u8),
+  set_second(second: u8),
+  set_nanosecond(nanosecond: u64)
 );

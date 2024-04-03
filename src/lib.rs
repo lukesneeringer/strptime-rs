@@ -36,7 +36,54 @@ impl Parser {
   ///
   /// The following symbols are recognized:
   ///
+  /// ## Year
   ///
+  /// | Code | Example | Description                                            |
+  /// | ---- | ------- | ------------------------------------------------------ |
+  /// | `Y`  | `2012`  | The year, zero-padded to 4 digits.                     |
+  /// | `C`  | `20`    | The year divided by 100, with the remainder discarded. |
+  /// | `y`  | `12`    | The year modulo 100, zero-padded to 2 digits.          |
+  ///
+  /// ## Month
+  ///
+  /// | Code       | Example | Description                                                       |
+  /// | ---------- | ------- | ----------------------------------------------------------------- |
+  /// | `m`        | `04`    | The month number, zero-padded to two digits (`01`` = January)     |
+  /// | 'b' or 'h' | `Apr`   | The month's English name, abbreviated to three characters         |
+  /// | `B`        | `April` | The month's English name (abbreviations >= 3 chars also accepted) |
+  ///
+  /// ## Day
+  ///
+  /// | Code | Example | Description                                    |
+  /// | ---- | ------- | ---------------------------------------------- |
+  /// | `d`  | `21`    | The day of the month, zero padded to 2 digits. |
+  /// | `e`  | `21`    | Same as `% d`.                                 |
+  ///
+  /// ## Hour
+  ///
+  /// | Code | Example | Description                                                 |
+  /// | ---- | ------- | ----------------------------------------------------------- |
+  /// | `H`  | `17`    | The hour, zero-padded to 2 digits, using the 24-hour clock. |
+  /// | `I`  | `05`    | The hour, zero-padded to 2 digits, using the 12-hour clock. |
+  /// | `k`  | `17`    | Same as `% H`.                                              |
+  ///
+  /// ## Minute
+  ///
+  /// | Code | Example | Description                          |
+  /// | ---- | ------- | ------------------------------------ |
+  /// | `M`  | `30`    | The minute, zero-padded to 2 digits. |
+  ///
+  /// ## Second
+  ///
+  /// | Code | Example | Description                          |
+  /// | ---- | ------- | ------------------------------------ |
+  /// | `S`  | `45`    | The second, zero-padded to 2 digits. |
+  ///
+  /// ## Nanosecond
+  ///
+  /// | Code | Example     | Description                              |
+  /// | ---- | ----------- | ---------------------------------------- |
+  /// | `f`  | `500000000` | The nanosecond, zero-padded to 9 digits. |
   ///
   /// **Note:** The parser does not currently check for certain impossible combinations (such as
   /// declaring that April 21, 2012 was a Tuesday, when it was actually a Saturday). Currently,

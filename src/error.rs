@@ -14,6 +14,17 @@ pub struct ParseError {
   pub kind: ErrorKind,
 }
 
+impl ParseError {
+  pub(crate) fn new(src: &str, kind: ErrorKind) -> Self {
+    Self { src: src.into(), index: None, kind }
+  }
+
+  pub(crate) fn at_index(mut self, ix: usize) -> Self {
+    self.index = Some(ix);
+    self
+  }
+}
+
 impl Display for ParseError {
   fn fmt(&self, f: &mut Formatter<'_>) -> Result {
     write!(
@@ -35,21 +46,23 @@ impl Error for ParseError {}
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum ErrorKind {
-  Unexpected,
-  InputTooShort,
-  InputTooLong,
+  Ambiguous,
   IncompleteDate,
+  InputTooLong,
+  InputTooShort,
   InvalidFormat,
+  Unexpected,
 }
 
 impl Display for ErrorKind {
   fn fmt(&self, f: &mut Formatter<'_>) -> Result {
     write!(f, "{}", match self {
-      Self::Unexpected => "Input does not conform to format string",
-      Self::InputTooShort => "Input terminated unexpectedly before parsing finished",
-      Self::InputTooLong => "Parsing finished, but input remains",
+      Self::Ambiguous => "Parsing succeeded, but the final date was ambiguous",
       Self::IncompleteDate => "Date specified, but could not determine year, month, and day",
+      Self::InputTooLong => "Parsing finished, but input remains",
+      Self::InputTooShort => "Input terminated unexpectedly before parsing finished",
       Self::InvalidFormat => "Could not parse format string",
+      Self::Unexpected => "Input does not conform to format string",
     })
   }
 }
