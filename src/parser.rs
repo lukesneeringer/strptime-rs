@@ -27,7 +27,7 @@ impl<'a> OnceParser<'a> {
   }
 
   pub(crate) fn parse(mut self) -> ParseResult<RawDateTime> {
-    let mut answer = RawDateTime { date: None, time: None };
+    let mut answer = RawDateTime { src: self.date_str.into(), date: None, time: None };
 
     // Begin iterating over the format string, and incrementally "chew" characters from the
     // beginning of the date string.

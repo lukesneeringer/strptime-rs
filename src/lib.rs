@@ -120,9 +120,9 @@ impl Parser {
   /// # fn main() -> strptime::ParseResult<()> {
   /// use strptime::Parser;
   /// let parser = Parser::new("%m/%d/%y"); // Default behavior.
-  /// assert_eq!(parser.parse("04/21/12")?.date().unwrap().year(), 2012);
+  /// assert_eq!(parser.parse("04/21/12")?.date()?.year(), 2012);
   /// let parser = Parser::new("%m/%d/%y").modulo_year_resolution(|y| 2200 + y);
-  /// assert_eq!(parser.parse("04/21/12")?.date().unwrap().year(), 2212);
+  /// assert_eq!(parser.parse("04/21/12")?.date()?.year(), 2212);
   /// # Ok(())
   /// # }
   /// ```
