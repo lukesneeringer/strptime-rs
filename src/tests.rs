@@ -93,6 +93,24 @@ fn test_12h_time() -> ParseResult<()> {
 }
 
 #[test]
+fn test_nanos() -> ParseResult<()> {
+  check!(
+    Parser::new("%H:%M:%S%3f").parse("11:00:00500")?.time()?.hms() == (11, 0, 0, 500_000_000)
+  );
+  check!(
+    Parser::new("%H:%M:%S%.3f").parse("11:00:00.500")?.time()?.hms() == (11, 0, 0, 500_000_000)
+  );
+  check!(
+    Parser::new("%H:%M:%S%.6f").parse("11:00:00.500000")?.time()?.hms() == (11, 0, 0, 500_000_000)
+  );
+  check!(
+    Parser::new("%H:%M:%S%.9f").parse("11:00:00.500000000")?.time()?.hms()
+      == (11, 0, 0, 500_000_000)
+  );
+  Ok(())
+}
+
+#[test]
 fn test_errors() -> ParseResult<()> {
   check!(Parser::new("%Y-%m-%d").parse("12-14-21").is_err()); // Expected 4 digits
   check!(Parser::new("%C").parse("20").is_err()); // Ambiguous

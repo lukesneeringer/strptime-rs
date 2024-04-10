@@ -34,7 +34,11 @@ impl<'a> OnceParser<'a> {
     let mut input = Input::new(self.date_str);
     let mut flag = false;
     let mut padding = None;
+    let mut nano_digits = None;
     for ch in self.fmt.chars() {
+      if ch != 'f' && nano_digits.is_some() {
+        input.fail(ErrorKind::InvalidFormat)?;
+      }
       match flag {
         true => {
           flag = false;
@@ -67,10 +71,24 @@ impl<'a> OnceParser<'a> {
             // Time: Second
             'S' => answer.set_second(input.parse_int::<u8>(2, padding)?),
             // Time: Nanosecond
-            'f' => answer.set_nanosecond(input.parse_int::<u64>(9, padding)?),
+            'f' => match nano_digits {
+              Some(3) => answer.set_nanosecond(input.parse_int::<u64>(3, Some('0'))? * 1_000_000),
+              Some(6) => answer.set_nanosecond(input.parse_int::<u64>(6, Some('0'))? * 1000),
+              _ => answer.set_nanosecond(input.parse_int::<u64>(9, Some('0'))?),
+            },
             // Padding change modifiers.
             '-' | '0' | ' ' => {
               padding = Some(ch);
+              flag = true;
+            },
+            // Prefix modifiers
+            '.' => {
+              input.expect_char('.')?;
+              flag = true;
+            },
+            // Nanosecond modifiers
+            '3' | '6' | '9' => {
+              nano_digits = ch.to_digit(10);
               flag = true;
             },
             _ => input.fail(ErrorKind::InvalidFormat)?,
