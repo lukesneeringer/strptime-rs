@@ -111,6 +111,7 @@ impl<'a> OnceParser<'a> {
 
     // Assert that our answer is complete.
     answer.assert_complete(self.date_str)?;
+    input.assert_consumed()?;
     Ok(answer)
   }
 }
@@ -289,6 +290,14 @@ impl<'a> Input<'a> {
       }
       break;
     }
+  }
+
+  /// Assert that no input remains, and create a parse error if it does.
+  fn assert_consumed(&mut self) -> ParseResult<()> {
+    if self.peek().is_some() {
+      self.fail(ErrorKind::InputTooLong)?;
+    }
+    Ok(())
   }
 
   /// Generate a parse error.
