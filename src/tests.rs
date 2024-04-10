@@ -118,5 +118,6 @@ fn test_errors() -> ParseResult<()> {
   check!(Parser::new("%m/%d/%Y").parse("7/4/1776").is_err()); // Expected 2 digits
   check!(Parser::new("%I:%M").parse("11:30").is_err()); // No AM/PM
   check!(Parser::new("%I:%M %p").parse("11:30 P").is_err()); // Parse error: No trailing M
+  check!(Parser::new("%Y-%m-%d").parse("2012-04-21T11:00:00").is_err()); // Trailing input
   Ok(())
 }
