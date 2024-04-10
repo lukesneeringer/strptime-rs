@@ -3,7 +3,7 @@ use crate::ParseError;
 use crate::ParseResult;
 
 /// A representation of a raw date.
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct RawDate {
   pub(crate) year: Option<i16>,
   pub(crate) month: Option<u8>,
@@ -42,7 +42,7 @@ impl RawDate {
 }
 
 /// A representation of time.
-#[derive(Debug, Clone, Copy)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct RawTime {
   pub(crate) hour: u8,
   pub(crate) minute: u8,
