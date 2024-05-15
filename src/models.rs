@@ -48,35 +48,38 @@ pub struct RawTime {
   pub(crate) minute: u8,
   pub(crate) second: u8,
   pub(crate) nanosecond: u64,
+  pub(crate) utc_offset: Option<i64>,
 }
 
 impl RawTime {
-  pub(crate) fn new() -> Self {
-    Self { hour: 0, minute: 0, second: 0, nanosecond: 0 }
-  }
-
   /// The hour; between 0 and 23, inclusive.
   #[inline]
-  pub fn hour(&self) -> u8 {
+  pub const fn hour(&self) -> u8 {
     self.hour
   }
 
   /// The minute; between 0 and 59, inclusive.
   #[inline]
-  pub fn minute(&self) -> u8 {
+  pub const fn minute(&self) -> u8 {
     self.minute
   }
 
   /// The second; between 0 and 59, inclusive.
   #[inline]
-  pub fn second(&self) -> u8 {
+  pub const fn second(&self) -> u8 {
     self.second
   }
 
   /// The microsecond; between 0 and 999,999, inclusive.
   #[inline]
-  pub fn nanosecond(&self) -> u64 {
+  pub const fn nanosecond(&self) -> u64 {
     self.nanosecond
+  }
+
+  /// The UTC offset, in seconds, if one was parsed.
+  #[inline]
+  pub const fn utc_offset(&self) -> Option<i64> {
+    self.utc_offset
   }
 }
 
@@ -140,9 +143,8 @@ macro_rules! set_time {
   ($($fn_name:ident($arg:ident: $arg_type:ty)),*) => {
     impl RawDateTime {
       $(pub(crate) fn $fn_name(&mut self, $arg: $arg_type) {
-        let mut time = self.time.take().unwrap_or_else(RawTime::new);
+        let time = self.time.get_or_insert_with(RawTime::default);
         time.$arg = $arg;
-        self.time = Some(time);
       })*
     }
   }
@@ -154,3 +156,12 @@ set_time!(
   set_second(second: u8),
   set_nanosecond(nanosecond: u64)
 );
+
+impl RawDateTime {
+  pub(crate) fn set_utc_offset(&mut self, hhmm: i64) {
+    let hours = hhmm / 100;
+    let minutes = hhmm % 100;
+    let time = self.time.get_or_insert_with(RawTime::default);
+    time.utc_offset = Some(hours * 3600 + minutes * 60);
+  }
+}
