@@ -83,6 +83,12 @@ pub type ParseResult<T> = Result<T, ParseError>;
 /// | ---- | ----------- | ---------------------------------------- |
 /// | `f`  | `500000000` | The nanosecond, zero-padded to 9 digits. |
 ///
+/// ## Time Zone Offset
+///
+/// | Code | Example | Description                      |
+/// | ---- | ------- | -------------------------------- |
+/// | `z`  | `-0400` | The offset, as `MMSS`, from UTC. |
+///
 /// **Note:** The parser does not currently check for certain impossible combinations (such as
 /// declaring that April 21, 2012 was a Tuesday, when it was actually a Saturday). Currently,
 /// non-conclusive input (such as weekdays) are discarded. This will change in the future.
