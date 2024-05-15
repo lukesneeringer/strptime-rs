@@ -77,7 +77,7 @@ impl<'a> OnceParser<'a> {
               _ => answer.set_nanosecond(input.parse_int::<u64>(9, Some('0'))?),
             },
             // Time Zone
-            'z' => answer.set_utc_offset(input.parse_int::<i64>(5, None)?),
+            'z' => answer.set_utc_offset(input.parse_int::<i32>(5, None)?),
             // Padding change modifiers.
             '-' | '0' | ' ' => {
               padding = Some(ch);

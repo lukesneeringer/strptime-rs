@@ -48,7 +48,7 @@ pub struct RawTime {
   pub(crate) minute: u8,
   pub(crate) second: u8,
   pub(crate) nanosecond: u64,
-  pub(crate) utc_offset: Option<i64>,
+  pub(crate) utc_offset: Option<i32>,
 }
 
 impl RawTime {
@@ -78,7 +78,7 @@ impl RawTime {
 
   /// The UTC offset, in seconds, if one was parsed.
   #[inline]
-  pub const fn utc_offset(&self) -> Option<i64> {
+  pub const fn utc_offset(&self) -> Option<i32> {
     self.utc_offset
   }
 }
@@ -158,7 +158,7 @@ set_time!(
 );
 
 impl RawDateTime {
-  pub(crate) fn set_utc_offset(&mut self, hhmm: i64) {
+  pub(crate) fn set_utc_offset(&mut self, hhmm: i32) {
     let hours = hhmm / 100;
     let minutes = hhmm % 100;
     let time = self.time.get_or_insert_with(RawTime::default);
