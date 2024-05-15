@@ -111,6 +111,16 @@ fn test_nanos() -> ParseResult<()> {
 }
 
 #[test]
+fn test_utc_offset() -> ParseResult<()> {
+  check!(
+    Parser::new("%H:%M:%S%z").parse("11:00:00-0400")?.time()?.utc_offset().unwrap() == -14400
+  );
+  check!(Parser::new("%H:%M:%S%z").parse("11:00:00+0200")?.time()?.utc_offset().unwrap() == 7200);
+  check!(Parser::new("%H:%M:%S%z").parse("11:00:00+0000")?.time()?.utc_offset().unwrap() == 0);
+  Ok(())
+}
+
+#[test]
 fn test_errors() -> ParseResult<()> {
   check!(Parser::new("%Y-%m-%d").parse("12-14-21").is_err()); // Expected 4 digits
   check!(Parser::new("%C").parse("20").is_err()); // Ambiguous
