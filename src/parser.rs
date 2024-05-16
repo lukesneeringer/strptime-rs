@@ -71,13 +71,13 @@ impl<'a> OnceParser<'a> {
             // Time: Second
             'S' => answer.set_second(input.parse_int::<u8>(2, padding)?),
             // Time: Nanosecond
-            'f' => match nano_digits {
+            'f' => match nano_digits.take() {
               Some(3) => answer.set_nanosecond(input.parse_int::<u64>(3, Some('0'))? * 1_000_000),
               Some(6) => answer.set_nanosecond(input.parse_int::<u64>(6, Some('0'))? * 1000),
               _ => answer.set_nanosecond(input.parse_int::<u64>(9, Some('0'))?),
             },
             // Time Zone
-            'z' => answer.set_utc_offset(input.parse_int::<i32>(5, None)?),
+            'z' => answer.set_utc_offset(input.parse_int::<i32>(5, Some('0'))?),
             // Padding change modifiers.
             '-' | '0' | ' ' => {
               padding = Some(ch);

@@ -111,12 +111,31 @@ fn test_nanos() -> ParseResult<()> {
 }
 
 #[test]
+fn test_nanos_trailing() -> ParseResult<()> {
+  let dt = Parser::new("%H:%M:%S%.6f %Y-%m-%d").parse("11:00:00.000000 2012-04-21")?;
+  check!(dt.date()?.year() == 2012);
+  check!(dt.date()?.month() == 4);
+  check!(dt.time()?.hour() == 11);
+  check!(dt.time()?.nanosecond() == 0);
+  Ok(())
+}
+
+#[test]
 fn test_utc_offset() -> ParseResult<()> {
   check!(
     Parser::new("%H:%M:%S%z").parse("11:00:00-0400")?.time()?.utc_offset().unwrap() == -14400
   );
   check!(Parser::new("%H:%M:%S%z").parse("11:00:00+0200")?.time()?.utc_offset().unwrap() == 7200);
   check!(Parser::new("%H:%M:%S%z").parse("11:00:00+0000")?.time()?.utc_offset().unwrap() == 0);
+  Ok(())
+}
+
+#[test]
+fn test_utc_offset_with_micros() -> ParseResult<()> {
+  let dt = Parser::new("%Y-%m-%d %H:%M:%S%.6f %z").parse("2012-04-21 11:00:00.000000 -0400")?;
+  check!(dt.date()?.year() == 2012);
+  check!(dt.time()?.hour() == 11);
+  check!(dt.time()?.utc_offset().unwrap() == -14400);
   Ok(())
 }
 
