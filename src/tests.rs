@@ -148,5 +148,7 @@ fn test_errors() -> ParseResult<()> {
   check!(Parser::new("%I:%M").parse("11:30").is_err()); // No AM/PM
   check!(Parser::new("%I:%M %p").parse("11:30 P").is_err()); // Parse error: No trailing M
   check!(Parser::new("%Y-%m-%d").parse("2012-04-21T11:00:00").is_err()); // Trailing input
+  // Trailing input; do not mis-ID as an offset
+  check!(Parser::new("%Y-%m-%dT%H:%M:%S%.6f%z").parse("2024-07-04T15:30:45.123456789").is_err());
   Ok(())
 }
