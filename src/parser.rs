@@ -77,7 +77,10 @@ impl<'a> OnceParser<'a> {
               _ => answer.set_nanosecond(input.parse_int::<u64>(9, Some('0'))?),
             },
             // Time Zone
-            'z' => answer.set_utc_offset(input.parse_int::<i32>(5, Some('0'))?),
+            'z' => {
+              let sign = input.parse_sign()?;
+              answer.set_utc_offset(input.parse_int::<i32>(4, Some('0'))? * sign);
+            },
             // Padding change modifiers.
             '-' | '0' | ' ' => {
               padding = Some(ch);
@@ -166,14 +169,29 @@ impl<'a> Input<'a> {
 
   /// Parse a static character.
   fn expect_char(&mut self, ch: char) -> ParseResult<()> {
-    self.peek().cloned().ok_or_else(|| self.err(ErrorKind::InputTooShort)).and_then(|c| {
-      match c == ch {
+    self.expect_chars(&[ch])?;
+    Ok(())
+  }
+
+  /// Parse one of an option of static characters.
+  fn expect_chars(&mut self, chars: &[char]) -> ParseResult<char> {
+    self.peek().cloned().ok_or_else(|| self.err(ErrorKind::InputTooShort)).and_then(
+      |c| match chars.contains(&c) {
         true => {
           self.next();
-          Ok(())
+          Ok(c)
         },
         false => self.fail(ErrorKind::Unexpected),
-      }
+      },
+    )
+  }
+
+  fn parse_sign(&mut self) -> ParseResult<i32> {
+    let sign_char = self.expect_chars(&['+', '-'])?;
+    Ok(match sign_char {
+      '+' => 1,
+      '-' => -1,
+      _ => unreachable!("Only `+` or `-` can have been returned from expect_chars"),
     })
   }
 
